@@ -6,20 +6,20 @@ const loginControl = async (req, res) => {
   try {
     const user = await userModel.findOne({ email: req.body.email });
     if (!user) {
-      return res.status(200).send({ message: 'User not found', success: false });
+      return res.status(404).send({ message: 'User not found', success: false }); // Changed to 404 Not Found
     }
 
     const isValid = await bcrypt.compare(req.body.password, user.password);
     if (!isValid) {
-      return res.status(200).send({ message: 'Invalid Email or Password', success: false });
+      return res.status(401).send({ message: 'Invalid Email or Password', success: false }); // Changed to 401 Unauthorized
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_KEY, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_KEY, { expiresIn: '24h' }); // Increased expiration time to 24 hours
     res.status(200).send({ message: 'Login Success', success: true, token });
 
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: `Error ${error.message}` });
+    res.status(500).send({ message: `Error: ${error.message}`, success: false }); // Improved error message
   }
 };
 
@@ -50,10 +50,7 @@ const authC = async (req, res) => {
   try {
     const user = await userModel.findOne({ _id: req.body.userId });
     if (!user) {
-      return res.status(200).send({
-        message: "User Not Found",
-        success: false,
-      });
+      return res.status(404).send({ message: "User Not Found", success: false });
     } else {
       res.status(200).send({
         success: true,
@@ -65,12 +62,7 @@ const authC = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-    res.status(500).send({
-      message: "auth error",
-      success: false,
-      error,
-    });
+    res.status(500).send({ message: `Error: ${error.message}`, success: false }); // Improved error message
   }
 };
-
 module.exports = { loginControl, registerControl, authC };

@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 
-
 module.exports = async (req, res, next) => {
   try {
     const token = req.headers['authorization'].split(" ")[1];
@@ -8,7 +7,7 @@ module.exports = async (req, res, next) => {
     jwt.verify(token, process.env.JWT_KEY, (err, decode) => {
       if (err) {
         console.log(`Error verifying token: ${err.message}`);
-        return res.status(200).send({
+        return res.status(401).send({ // Changed to 401 Unauthorized
           message: 'Auth Fail',
           success: false
         })
@@ -19,7 +18,7 @@ module.exports = async (req, res, next) => {
     })
   } catch (error) {
     console.log(err)
-    return res.status(200).send({
+    return res.status(401).send({ // Changed to 401 Unauthorized
       message: 'Auth Fail',
       success: false
     })
