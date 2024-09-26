@@ -1,6 +1,7 @@
 const userModel = require('../models/userModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const doctorModel = require('../models/doctorModel');
 
 const loginControl = async (req, res) => {
   try {
@@ -48,16 +49,14 @@ const registerControl = async (req, res) => {
 
 const authC = async (req, res) => {
   try {
-    const user = await userModel.findOne({ _id: req.body.userId });
+    const user = await userModel.findById({ _id: req.body.userId });
+    user.password=undefined;
     if (!user) {
       return res.status(404).send({ message: "User Not Found", success: false });
     } else {
       res.status(200).send({
         success: true,
-        data: {
-          name: user.name,
-          email: user.email,
-        },
+        data:user
       });
     }
   } catch (error) {
@@ -65,4 +64,38 @@ const authC = async (req, res) => {
     res.status(500).send({ message: `Error: ${error.message}`, success: false }); // Improved error message
   }
 };
-module.exports = { loginControl, registerControl, authC };
+
+
+const applyDoctorController = async (req, res) => {
+  try {
+    const newDoctor = await doctorModel({ ...req.body, status: "pending" });
+    await newDoctor.save();
+    const adminUser = await userModel.findOne({ isAdmin: true });
+    const notifcation = adminUser.notifcation;
+    notifcation.push({
+      type: "apply-doctor-request",
+      message: `${newDoctor.firstName} ${newDoctor.lastName} Has Applied For A Doctor Account`,
+      data: {
+        doctorId: newDoctor._id,
+        name: newDoctor.firstName + " " + newDoctor.lastName,
+        onClickPath: "/admin/docotrs",
+      },
+    });
+    await userModel.findByIdAndUpdate(adminUser._id, { notifcation });
+    res.status(201).send({
+      success: true,
+      message: "Doctor Account Applied SUccessfully",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      error,
+      message: "Error WHile Applying For Doctotr",
+    });
+  }
+};
+
+
+module.exports = { loginControl, registerControl, authC,  applyDoctorController
+ };
