@@ -1,6 +1,8 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+require('dotenv').config();
 
-const genAI = new GoogleGenerativeAI("AIzaSyAtCHPVILXQKBXiJ8rX5kQ25zpbaAUoF8I");
+const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+console.log(`API Key: ${process.env.API_KEY}`);
 
 async function run(symptom) {
   if (!symptom) {
