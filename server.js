@@ -30,6 +30,7 @@ app.post('/api/v1/advice', async (req, res) => {
 
 
 
+app.use('/api/v1/admin', require('./routes/adminRoutes'));
 
 app.use('/api/v1/user', require('./routes/userRoutes'));
 const port = process.env.PORT || 8080;
